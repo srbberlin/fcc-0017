@@ -6,8 +6,9 @@ const url = 'https://raw.githubusercontent.com/FreeCodeCamp/ProjectReferenceData
 d3.json(url, (error, res) => {
   if (! error) {
     let height = 540
-    let width = 940
+    let width = 800
     let box = d3.select('#box')
+    let foot = d3.select('#foot')
     let field = d3.select('svg')
     let items
     let vertScale = d3.scaleLinear()
@@ -45,14 +46,21 @@ d3.json(url, (error, res) => {
       .html(d => {
         return '<span style="font-size: 18px; font-weight: bold;">' +
                d.Name + ', ' + cc.select(d.Nationality) + '</span><br>' + '<br>' + d.Year + ': ' +
-               'Place ' + d.Place + ', ' + d.Time +
+               'Place ' + d.Place + ', ' + d3.timeFormat('%H:%M')(d.Time) +
                (d.Doping ? '<br><br>' + d.Doping : '')
       })
 
+    foot
+      .html(
+        '<h3>Doping at the Alpe d\'Huez</h3>' +
+        '<p>Most of professional bicycle riders are<br>related to doping. ' +
+        'Set the cursor over the<br>buttons to see a breef description.<br>' +
+        'Click on it to read more.<p>'
+      )
 
     items = field
       .attr('height', height + 80)
-      .attr('width', width + 140)
+      .attr('width', width + 160)
       .attr('style', 'font-family: sans-serif; font-size: 12px')
       .append('g')
       .attr('id', 'CANVAS')
@@ -84,7 +92,7 @@ d3.json(url, (error, res) => {
       .attr('y', d => { return vertScale(d.Place) + 6 })
 
     field.append('text')
-      .text('Place')
+      .text('Ranking')
       .attr('transform', 'translate(40, 250) rotate(-90,0,13)')
 
     field.append('g')
@@ -92,7 +100,7 @@ d3.json(url, (error, res) => {
       .call(placeAxis)
 
     field.append('text')
-      .text('Time')
+      .text('Time up the Alpe d\'Huez')
       .attr('x', width / 2)
       .attr('y', height + 60)
 

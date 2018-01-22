@@ -1,8 +1,15 @@
 #all {
+  height: 640px;
+  width: 960px;
   position: absolute;
-  top: 20px;
-  left: auto;
-  right: auto;
+	background-color:#27f305;
+	position:absolute;
+	margin:auto;
+	top:0;
+	left:0;
+	right:0;
+  bottom:0;
+  padding-top: 20px;
 }
 
 #box {
@@ -11,6 +18,12 @@
   left: 100px;
   width: 290px;
   height: 130px;
+}
+
+#foot {
+  position: absolute;
+  top: 300px;
+  left: 500px;
 }
 
 .show {
