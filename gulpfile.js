@@ -1,7 +1,10 @@
 const gulp = require('gulp')
-const babelify = require('babelify')
+const runSeq = require('run-sequence')
+const sass = require('gulp-sass')
+const sourcemaps = require('gulp-sourcemaps')
 const browserify = require('browserify')
-const browserSync = require('browser-sync')
+const babelify = require('babelify')
+const browserSync = require('browser-sync').create()
 const source = require('vinyl-source-stream')
 const del = require('del')
 
@@ -9,7 +12,6 @@ var config = {
   src:     __dirname + '/src',
   htmlin:  __dirname + '/src/html/**/*.html',
   cssin:   __dirname + '/src/css/**/*.css',
-  datain:  __dirname + '/src/js/**/*.json',
   jsin:    __dirname + '/src/js/**/*.js',
   jsentry: __dirname + '/src/js/index.js',
   imgin:   __dirname + '/src/img/**/*',
@@ -23,30 +25,31 @@ gulp.task('reload', function () {
   browserSync.reload()
 })
 
-gulp.task('serve', ['images', 'data', 'scripts', 'css', 'html'], function () {
-  browserSync({
+gulp.task('serve', ['sass', 'scripts', 'images', 'html'], function () {
+  browserSync.init({
     server: config.htmlout
   })
 
-  gulp.watch(config.datain, ['data', 'reload'])
-  gulp.watch(config.jsin, ['scripts', 'reload'])
-  gulp.watch(config.cssin, ['css', 'reload'])
-  gulp.watch(config.imgin, ['images', 'reload'])
-  gulp.watch(config.htmlin, ['html', 'reload'])
+  gulp.watch(config.jsin, () => runSeq(['scripts', 'reload']))
+  gulp.watch(config.cssin, () => runSeq(['sass', 'reload']))
+  gulp.watch(config.imgin, () => runSeq(['images', 'reload']))
+  gulp.watch(config.htmlin, () => runSeq(['html', 'reload']))
 })
 
-gulp.task('data', function () {
-  return gulp.src(config.datain)
-    .pipe(gulp.dest(config.jsout))
-})
-
-gulp.task('css', function () {
-  return gulp.src(config.cssin)
+gulp.task('sass', function () {
+  let path = config.cssin
+  return gulp.src(path)
+    .pipe(sourcemaps.init())
+    .pipe(sass())
+    .pipe(sourcemaps.write())
     .pipe(gulp.dest(config.cssout))
 })
 
 gulp.task('scripts', function () {
-  return browserify({entries: config.jsentry, extensions: ['.js'], debug: true})
+  return browserify({
+    entries: config.jsentry,
+    extensions: ['.js'],
+    debug: true})
     .transform(babelify)
     .bundle()
     .pipe(source('index.js'))
@@ -54,12 +57,14 @@ gulp.task('scripts', function () {
 })
 
 gulp.task('images', function () {
-  return gulp.src(config.imgin)
+  let path = config.imgin
+  return gulp.src(path)
     .pipe(gulp.dest(config.imgout))
 })
 
 gulp.task('html', function () {
-  return gulp.src(config.htmlin)
+  let path = config.htmlin
+  return gulp.src(path)
     .pipe(gulp.dest(config.htmlout))
 })
 
@@ -70,11 +75,15 @@ gulp.task('clean', function () {
     config.imgout + '/**/*',
     config.htmlout + '/**/*.html'
   ]
-  return del(paths).then(function () {
+  let res
+  res = del(paths)
+  res.then(function () {
   }).catch(function () {
   })
+  return res
 })
 
-gulp.task('build', ['scripts', 'css', 'html'])
+gulp.task('build', ['scripts', 'sass', 'html', 'images'])
 
 gulp.task('default', ['serve'])
+
