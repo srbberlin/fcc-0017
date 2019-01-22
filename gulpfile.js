@@ -1,5 +1,4 @@
 const gulp = require('gulp')
-const runSeq = require('run-sequence')
 const sass = require('gulp-sass')
 const sourcemaps = require('gulp-sourcemaps')
 const browserify = require('browserify')
@@ -25,27 +24,27 @@ gulp.task('reload', function () {
   browserSync.reload()
 })
 
-gulp.task('serve', ['sass', 'scripts', 'images', 'html'], function () {
+function serve () {
   browserSync.init({
     server: config.htmlout
   })
 
-  gulp.watch(config.jsin, () => runSeq(['scripts', 'reload']))
-  gulp.watch(config.cssin, () => runSeq(['sass', 'reload']))
-  gulp.watch(config.imgin, () => runSeq(['images', 'reload']))
-  gulp.watch(config.htmlin, () => runSeq(['html', 'reload']))
-})
+  gulp.watch(config.jsin, () => gulp.series(scripts, reload))
+  gulp.watch(config.cssin, () => gulp.series(sass, reload))
+  gulp.watch(config.imgin, () => gulp.series(images, reload))
+  gulp.watch(config.htmlin, () => gulp.series(html, reload))
+}
 
-gulp.task('sass', function () {
+function sss () {
   let path = config.cssin
   return gulp.src(path)
     .pipe(sourcemaps.init())
     .pipe(sass())
     .pipe(sourcemaps.write())
     .pipe(gulp.dest(config.cssout))
-})
+}
 
-gulp.task('scripts', function () {
+function scripts () {
   return browserify({
     entries: config.jsentry,
     extensions: ['.js'],
@@ -54,21 +53,21 @@ gulp.task('scripts', function () {
     .bundle()
     .pipe(source('index.js'))
     .pipe(gulp.dest(config.jsout))
-})
+}
 
-gulp.task('images', function () {
+function images () {
   let path = config.imgin
   return gulp.src(path)
     .pipe(gulp.dest(config.imgout))
-})
+}
 
-gulp.task('html', function () {
+function html () {
   let path = config.htmlin
   return gulp.src(path)
     .pipe(gulp.dest(config.htmlout))
-})
+}
 
-gulp.task('clean', function () {
+function clean () {
   let paths = [
     config.jsout + '/**/*.js',
     config.cssout + '/**/*.css',
@@ -81,9 +80,8 @@ gulp.task('clean', function () {
   }).catch(function () {
   })
   return res
-})
+}
 
-gulp.task('build', ['scripts', 'sass', 'html', 'images'])
-
-gulp.task('default', ['serve'])
+exports.build = gulp.parallel(scripts, sss, html, images)
+exports.default = serve
 
