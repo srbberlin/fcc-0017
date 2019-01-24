@@ -17,12 +17,17 @@ var config = {
   cssout:  __dirname + '/docs/css/',
   jsout:   __dirname + '/docs/js/',
   imgout:  __dirname + '/docs/img/',
-  htmlout: __dirname + '/docs'
+  htmlout: __dirname + '/docs/'
 }
 
-gulp.task('reload', function () {
+function clean (cb) {
+  del([config.htmlout + '*'])
+  cb()
+}
+
+function reload () {
   browserSync.reload()
-})
+}
 
 function serve () {
   browserSync.init({
@@ -35,9 +40,9 @@ function serve () {
   gulp.watch(config.htmlin, () => gulp.series(html, reload))
 }
 
-function sss () {
-  let path = config.cssin
-  return gulp.src(path)
+function css () {
+  return gulp
+    .src(config.cssin)
     .pipe(sourcemaps.init())
     .pipe(sass())
     .pipe(sourcemaps.write())
@@ -56,32 +61,17 @@ function scripts () {
 }
 
 function images () {
-  let path = config.imgin
-  return gulp.src(path)
+  return gulp
+    .src(config.imgin)
     .pipe(gulp.dest(config.imgout))
 }
 
 function html () {
-  let path = config.htmlin
-  return gulp.src(path)
+  return gulp
+    .src(config.htmlin)
     .pipe(gulp.dest(config.htmlout))
 }
 
-function clean () {
-  let paths = [
-    config.jsout + '/**/*.js',
-    config.cssout + '/**/*.css',
-    config.imgout + '/**/*',
-    config.htmlout + '/**/*.html'
-  ]
-  let res
-  res = del(paths)
-  res.then(function () {
-  }).catch(function () {
-  })
-  return res
-}
-
-exports.build = gulp.parallel(scripts, sss, html, images)
+exports.build = gulp.series(clean, gulp.parallel(html, images, scripts, css))
+exports.clean = clean
 exports.default = serve
-
