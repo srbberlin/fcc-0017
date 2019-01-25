@@ -25,8 +25,9 @@ function clean (cb) {
   cb()
 }
 
-function reload () {
+function reload (cb) {
   browserSync.reload()
+  cb()
 }
 
 function serve () {
