@@ -1,21 +1,18 @@
-const fnc = (b, d, e, f, n) => {
-  let here = d3.select(f[e])
-  let id = here.attr('id')
-  let rect = b.select('#box' + id)
-
-  rect
-    .attr('class', n)
-}
-
 module.exports = {
   disp: ((b) => {
     return {
-      show: (d, e, f) =>  {
-        fnc(b, d, e, f, 'show')
+      show: (d) =>  {
+        b.html('<span style="font-size: 18px; font-weight: bold;">' +
+          d.Name + ', ' + d.Nationality + '</span><br>' + '<br>' + d.Year + ': ' +
+          'Place ' + d.Place + ', ' + d3.timeFormat('%H:%M')(d.Time) +
+          (d.Doping ? '<br><br>' + d.Doping : ''))
+        b.attr('data-year', d.Year)
+        b.attr('class', 'show')
       },
-      hide: (d, e, f) =>  {
-        fnc(b, d, e, f, 'hide')
+      hide: () =>  { 
+        b.html('')
+        b.attr('class', 'hide')
       }
     }
-  })(d3.select('body'))
+  })(d3.select('#tooltip'))
 }
