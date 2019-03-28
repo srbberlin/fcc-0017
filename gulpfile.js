@@ -3,9 +3,9 @@ const sass = require('gulp-sass')
 const sourcemaps = require('gulp-sourcemaps')
 const browserify = require('browserify')
 const babelify = require('babelify')
-const browserSync = require('browser-sync').create()
 const source = require('vinyl-source-stream')
 const del = require('del')
+const browserSync = require('browser-sync').create()
 
 var config = {
   src:     __dirname + '/src',
@@ -13,16 +13,12 @@ var config = {
   cssin:   __dirname + '/src/css/**/*.css',
   jsin:    __dirname + '/src/js/**/*.js',
   jsentry: __dirname + '/src/js/index.js',
+  datain:  __dirname + '/src/js/**/*.json',
   imgin:   __dirname + '/src/img/**/*',
   cssout:  __dirname + '/docs/css/',
   jsout:   __dirname + '/docs/js/',
   imgout:  __dirname + '/docs/img/',
-  htmlout: __dirname + '/docs/'
-}
-
-function clean (cb) {
-  del([config.htmlout + '*'])
-  cb()
+  htmlout: __dirname + '/docs'
 }
 
 function reload (cb) {
@@ -35,15 +31,16 @@ function serve () {
     server: config.htmlout
   })
 
-  gulp.watch(config.jsin, () => gulp.series(scripts, reload))
-  gulp.watch(config.cssin, () => gulp.series(sass, reload))
-  gulp.watch(config.imgin, () => gulp.series(images, reload))
-  gulp.watch(config.htmlin, () => gulp.series(html, reload))
+  gulp.watch(config.jsin, gulp.series(scripts, reload))
+  gulp.watch(config.cssin, gulp.series(sss, reload))
+  gulp.watch(config.imgin, gulp.series(images, reload))
+  gulp.watch(config.datain, gulp.series(data, reload))
+  gulp.watch(config.htmlin, gulp.series(html, reload))
 }
 
-function css () {
-  return gulp
-    .src(config.cssin)
+function sss () {
+  let path = config.cssin
+  return gulp.src(path)
     .pipe(sourcemaps.init())
     .pipe(sass())
     .pipe(sourcemaps.write())
@@ -62,17 +59,31 @@ function scripts () {
 }
 
 function images () {
-  return gulp
-    .src(config.imgin)
+  let path = config.imgin
+  return gulp.src(path)
     .pipe(gulp.dest(config.imgout))
 }
 
+function data () {
+  let path = config.datain
+  return gulp.src(path)
+    .pipe(gulp.dest(config.jsout))
+}
+
 function html () {
-  return gulp
-    .src(config.htmlin)
+  let path = config.htmlin
+  return gulp.src(path)
     .pipe(gulp.dest(config.htmlout))
 }
 
-exports.build = gulp.series(clean, gulp.parallel(html, images, scripts, css))
-exports.clean = clean
-exports.default = serve
+function clean () {
+  return del([ config.htmlout + '/*' ])
+}
+
+function build (cb) {
+  gulp.series(clean, gulp.parallel(scripts, sss, html, data, images))(cb)
+}
+
+exports.build = build
+exports.default = gulp.series(build, serve)
+
