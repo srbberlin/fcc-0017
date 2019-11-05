@@ -1,5 +1,5 @@
 # fcc-0017
-FreeCodeCamp: Doping at the Alpe d'Huez
+FreeCodeCamp: Scatter Plot: Doping at the Alpe d'Huez
 
 Packages:
 
